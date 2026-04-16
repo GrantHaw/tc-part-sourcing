@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "TC Part Sourcing",
+  "version": "0.3.1",
+  "description": "Scrape eBay and Amazon listings and build formatted option blocks for ResNet part sourcing tickets.",
+  "permissions": ["activeTab", "tabs", "storage", "clipboardWrite"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "TC Part Sourcing"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.ebay.com/itm/*"],
+      "js": ["parsers/shared.js", "parsers/ebay.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.amazon.com/*/dp/*", "*://*.amazon.com/dp/*", "*://*.amazon.com/gp/product/*"],
+      "js": ["parsers/shared.js", "parsers/amazon.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
