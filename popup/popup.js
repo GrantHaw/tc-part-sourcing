@@ -427,7 +427,7 @@ els.copy.addEventListener('click', async function () {
 
 function formatOpt(o, n) {
   const lines = [];
-  lines.push('Option ' + n + ' - ' + cleanUrl(o.url));
+  lines.push('[Option ' + n + '](' + cleanUrl(o.url) + ')');
   lines.push('● Part Number: ' + (o.partNumber || 'N/A'));
 
   let priceLine = o.price || '?';
