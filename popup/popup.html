@@ -82,6 +82,17 @@
     <button id="clear" class="danger">Clear list</button>
   </footer>
 
+  <!-- custom modal: replaces confirm/alert since chrome blocks those in extension popups -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <p id="modal-msg"></p>
+      <div class="modal-btns">
+        <button id="modal-ok" class="primary">OK</button>
+        <button id="modal-cancel" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

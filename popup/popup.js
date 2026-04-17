@@ -21,7 +21,55 @@ const els = {
   copy: document.getElementById('copy'),
   clear: document.getElementById('clear'),
   popout: document.getElementById('popout'),
+  modal: document.getElementById('modal'),
+  modalMsg: document.getElementById('modal-msg'),
+  modalOk: document.getElementById('modal-ok'),
+  modalCancel: document.getElementById('modal-cancel'),
 };
+
+// chrome blocks alert() and confirm() in extension popups so we use these instead
+// tcAlert: just an ok button, no cancel
+// tcConfirm: ok + cancel, resolves true/false
+function tcAlert(msg) {
+  return new Promise(function (res) {
+    els.modalMsg.textContent = msg;
+    els.modalCancel.style.display = 'none';
+    els.modal.classList.remove('hidden');
+
+    function done() {
+      els.modal.classList.add('hidden');
+      els.modalCancel.style.display = '';
+      els.modalOk.removeEventListener('click', done);
+      res();
+    }
+    els.modalOk.addEventListener('click', done);
+  });
+}
+
+function tcConfirm(msg) {
+  return new Promise(function (res) {
+    els.modalMsg.textContent = msg;
+    els.modalCancel.style.display = '';
+    els.modal.classList.remove('hidden');
+
+    function ok() {
+      cleanup();
+      res(true);
+    }
+    function cancel() {
+      cleanup();
+      res(false);
+    }
+    function cleanup() {
+      els.modal.classList.add('hidden');
+      els.modalOk.removeEventListener('click', ok);
+      els.modalCancel.removeEventListener('click', cancel);
+    }
+
+    els.modalOk.addEventListener('click', ok);
+    els.modalCancel.addEventListener('click', cancel);
+  });
+}
 
 // url param tells us if this instance is running in a detached window
 const isDetached = new URLSearchParams(location.search).get('detached') === '1';
@@ -239,7 +287,7 @@ function clearForm() {
 els.add.addEventListener('click', async function () {
   const o = formToOpt();
   if (!o.url) {
-    alert('URL is required');
+    await tcAlert('URL is required');
     return;
   }
   if (editIdx >= 0) {
@@ -352,7 +400,8 @@ function edit(i) {
 }
 
 async function del(i) {
-  if (!confirm('Delete option ' + (i + 1) + '?')) return;
+  const confirmed = await tcConfirm('Delete option ' + (i + 1) + '?');
+  if (!confirmed) return;
   opts.splice(i, 1);
   if (editIdx === i) clearForm();
   else if (editIdx > i) editIdx -= 1;
@@ -363,7 +412,7 @@ async function del(i) {
 // copy all
 els.copy.addEventListener('click', async function () {
   if (opts.length === 0) {
-    alert('No options to copy');
+    await tcAlert('No options to copy');
     return;
   }
   const text = opts.map(function (o, i) { return formatOpt(o, i + 1); }).join('\n\n');
@@ -372,7 +421,7 @@ els.copy.addEventListener('click', async function () {
     els.copy.textContent = 'Copied!';
     setTimeout(function () { els.copy.textContent = 'Copy all'; }, 1500);
   } catch (e) {
-    alert('Copy failed: ' + e.message);
+    await tcAlert('Copy failed: ' + e.message);
   }
 });
 
@@ -386,7 +435,9 @@ function formatOpt(o, n) {
   lines.push('● ' + priceLine);
 
   lines.push('● Ships from ' + (o.location || '?'));
-  lines.push('● Takes ' + (o.delivery || '?'));
+  // "Takes" was weird when the scraped text already started with "Free" or had "delivery" in it
+  // e.g. "Takes Free 2-4 day delivery" -- changed to ETA: to avoid that
+  lines.push('● ETA: ' + (o.delivery || '?'));
 
   let ratingLine = o.rating || '?';
   // backward compat: if rating is just a number (old storage format), assume ebay-style
@@ -404,7 +455,8 @@ function formatOpt(o, n) {
 // clear list
 els.clear.addEventListener('click', async function () {
   if (opts.length === 0) return;
-  if (!confirm('Clear all ' + opts.length + ' options?')) return;
+  const confirmed = await tcConfirm('Clear all ' + opts.length + ' options?');
+  if (!confirmed) return;
   opts = [];
   editIdx = -1;
   await saveOpts();

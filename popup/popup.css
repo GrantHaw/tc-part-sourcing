@@ -186,3 +186,48 @@ footer {
   background: #fafafa;
 }
 footer button { flex: 1; }
+
+/* custom modal overlay
+   chrome blocks alert/confirm in extension popups, so we roll our own */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modal.hidden { display: none; }
+
+.modal-box {
+  background: #1a1a1a;
+  color: #fff;
+  border-radius: 10px;
+  padding: 20px 22px 16px;
+  width: 260px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.modal-box p {
+  margin-bottom: 16px;
+}
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+/* override flex:1 from the global primary rule inside modal */
+.modal-btns button.primary {
+  flex: none;
+  padding: 7px 20px;
+  border-radius: 20px;  /* pill shape to match chrome's native dialog vibe */
+}
+.modal-btns button.secondary {
+  flex: none;
+  padding: 7px 20px;
+  border-radius: 20px;
+  background: #3a3a3a;
+  color: #fff;
+}
+.modal-btns button.secondary:hover { background: #4a4a4a; }
