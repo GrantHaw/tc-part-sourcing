@@ -98,15 +98,18 @@ function getLoc() {
   return '';
 }
 
-// clean up whatever delivery string we extracted
-// currently unused since deliveryAsDays handles the conversion, but keeping
-// the old helper out so the file stays clean
+// strip a leading "Free" word from a delivery string
+// shipping cost already lives in its own field, no need to repeat it here
+function stripLeadingFree(s) {
+  return s.replace(/^Free\s+/i, '').trim();
+}
+
 function getDelivery() {
   const block = getShipBlock();
   if (block) {
     // prefer speed description since it stays meaningful when reviewed days later
     const speed = block.match(/(?:Free\s+)?\d+(?:\s*-\s*\d+)?\s*(?:business\s+)?days?\s*(?:delivery|shipping)?/i);
-    if (speed) return speed[0].replace(/\s+/g, ' ').trim();
+    if (speed) return stripLeadingFree(speed[0].replace(/\s+/g, ' ').trim());
 
     // fallback: convert "Get it between DATE and DATE" to "N-M days from today"
     const phrase = block.match(/(?:Get it|Estimated|Arrives)[^\n]+/i);
@@ -119,7 +122,7 @@ function getDelivery() {
   const raw = findLabeled(/delivery|estimated/i);
   if (raw) {
     const speed = raw.match(/(?:Free\s+)?\d+(?:\s*-\s*\d+)?\s*(?:business\s+)?days?\s*(?:delivery|shipping)?/i);
-    if (speed) return speed[0].replace(/\s+/g, ' ').trim();
+    if (speed) return stripLeadingFree(speed[0].replace(/\s+/g, ' ').trim());
     const days = deliveryAsDays(raw);
     if (days) return days;
   }
@@ -140,8 +143,8 @@ function getReturns() {
   t = t.replace(/See details.*$/i, '').trim();
   // collapse weird whitespace
   t = t.replace(/\s+/g, ' ').trim();
-  // clean dangling period if we cut mid-sentence
-  t = t.replace(/\.\s*$/, '');
+  // ensure it ends with a period
+  if (t && !/\.$/.test(t)) t = t + '.';
   return t.slice(0, 120);
 }
 
