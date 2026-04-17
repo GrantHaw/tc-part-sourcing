@@ -8,6 +8,7 @@
   <header>
     <img src="../icons/icon48.png" alt="">
     <h1>TC Part Sourcing</h1>
+    <button id="help" class="header-btn" title="How to use">?</button>
     <button id="popout" class="header-btn" title="Open in detached window">Pop out ↗</button>
   </header>
 
@@ -89,6 +90,40 @@
       <div class="modal-btns">
         <button id="modal-ok" class="primary">OK</button>
         <button id="modal-cancel" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- help modal -->
+  <div id="help-modal" class="modal hidden">
+    <div class="modal-box help-box">
+      <p class="help-title">How to use</p>
+      <div class="help-body">
+        <p>1. Open an eBay or Amazon listing for a candidate part.</p>
+        <p>2. Click the extension icon. Fields pre-fill from the page.</p>
+        <p>3. <strong>Verify every field</strong> — parsers miss things.</p>
+        <p>4. Hit <strong>Add to list</strong>. Repeat for each candidate.</p>
+        <p>5. Reorder with arrows so Option 1 is your best pick.</p>
+        <p>6. Click <strong>Copy all</strong> and paste into the ticket.</p>
+        <p>7. Click <strong>Clear list</strong> before starting the next ticket.</p>
+
+        <p class="help-section">Installing (unpacked)</p>
+        <p>1. Unzip the extension folder somewhere permanent.</p>
+        <p>2. Go to <code>chrome://extensions</code>.</p>
+        <p>3. Toggle <strong>Developer mode</strong> on (top right).</p>
+        <p>4. Click <strong>Load unpacked</strong> and select the <code>partsourcer</code> folder.</p>
+        <p>5. Pin the icon to your toolbar so it's one click away.</p>
+
+        <p class="help-section">Watch out for</p>
+        <p>• eBay and Amazon change their layouts regularly — if fields come back blank, the parser is stale. Flag it so selectors can be updated.</p>
+        <p>• If scraping does nothing on a tab that was open before you installed, reload the page first.</p>
+        <p>• Rating format differs: eBay shows <em>99.2% positive</em>, Amazon shows <em>4.5/5 stars</em>. Both are fine.</p>
+        <p>• Options are stored locally only — switching machines mid-ticket loses the list.</p>
+        <p>• On any non-eBay/Amazon page the form opens blank except for the URL. Fill it in by hand.</p>
+        <p>• If the detached window is open and you also click the toolbar icon, you'll get both. Close whichever you don't want.</p>
+      </div>
+      <div class="modal-btns">
+        <button id="help-close" class="primary">Got it</button>
       </div>
     </div>
   </div>

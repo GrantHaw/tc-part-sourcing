@@ -25,6 +25,9 @@ const els = {
   modalMsg: document.getElementById('modal-msg'),
   modalOk: document.getElementById('modal-ok'),
   modalCancel: document.getElementById('modal-cancel'),
+  helpBtn: document.getElementById('help'),
+  helpModal: document.getElementById('help-modal'),
+  helpClose: document.getElementById('help-close'),
 };
 
 // chrome blocks alert() and confirm() in extension popups so we use these instead
@@ -138,6 +141,18 @@ els.popout.addEventListener('click', function () {
     height: 820,
   });
   // popup will auto-close when focus moves to the new window
+});
+
+// help modal
+els.helpBtn.addEventListener('click', function () {
+  els.helpModal.classList.remove('hidden');
+});
+els.helpClose.addEventListener('click', function () {
+  els.helpModal.classList.add('hidden');
+});
+// close on backdrop click too
+els.helpModal.addEventListener('click', function (e) {
+  if (e.target === els.helpModal) els.helpModal.classList.add('hidden');
 });
 
 // handle tab changes in detached mode
@@ -435,8 +450,6 @@ function formatOpt(o, n) {
   lines.push('● ' + priceLine);
 
   lines.push('● Ships from ' + (o.location || '?'));
-  // "Takes" was weird when the scraped text already started with "Free" or had "delivery" in it
-  // e.g. "Takes Free 2-4 day delivery" -- changed to ETA: to avoid that
   lines.push('● ETA: ' + (o.delivery || '?'));
 
   let ratingLine = o.rating || '?';

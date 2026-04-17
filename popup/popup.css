@@ -221,7 +221,7 @@ footer button { flex: 1; }
 .modal-btns button.primary {
   flex: none;
   padding: 7px 20px;
-  border-radius: 20px;  /* pill shape to match chrome's native dialog vibe */
+  border-radius: 20px;
 }
 .modal-btns button.secondary {
   flex: none;
@@ -231,3 +231,40 @@ footer button { flex: 1; }
   color: #fff;
 }
 .modal-btns button.secondary:hover { background: #4a4a4a; }
+
+/* help modal */
+.help-box {
+  width: 340px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+.help-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.help-body {
+  overflow-y: auto;
+  flex: 1;
+  margin-bottom: 14px;
+  padding-right: 4px;
+}
+.help-body p {
+  margin-bottom: 8px;
+  line-height: 1.5;
+  font-size: 12px;
+}
+.help-body code {
+  font-family: "Consolas", "Menlo", monospace;
+  background: #2e2e2e;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+.help-section {
+  font-weight: 700;
+  margin-top: 14px !important;
+  margin-bottom: 6px !important;
+  color: #f47b1f;
+}
