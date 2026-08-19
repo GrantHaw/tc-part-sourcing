@@ -1,6 +1,10 @@
 // shared helpers loaded before both site-specific parsers
 // functions defined here are available in the global scope of the content script
 
+// firefox gives us browser.* (promise based), chrome gives us chrome.*
+// firefox also aliases chrome.* but callbacks vs promises differ, so pin to browser when its there
+const ext = (typeof browser !== 'undefined' && browser.runtime) ? browser : chrome;
+
 const _MONTHS = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
   jul: 6, aug: 7, sep: 8, sept: 8, oct: 9, nov: 10, dec: 11,

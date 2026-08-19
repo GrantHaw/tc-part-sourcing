@@ -2,7 +2,7 @@
 // amazon doesn't have seller-feedback % like ebay, so rating falls back to product stars
 // user should verify seller info manually if it matters
 
-chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+ext.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if (msg && msg.action === 'scrape') {
     try {
       sendResponse({ ok: true, data: scrape() });
@@ -10,8 +10,10 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
       // console.log('amazon scrape err', e);
       sendResponse({ ok: false, err: String(e) });
     }
+    // firefox hangs the sender promise if we claim async and never answer,
+    // so only hold the channel open for messages we actually handle
+    return true;
   }
-  return true;
 });
 
 function scrape() {

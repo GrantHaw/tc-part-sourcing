@@ -268,3 +268,9 @@ footer button { flex: 1; }
   margin-bottom: 6px !important;
   color: #f47b1f;
 }
+/* detached window mode, let the layout fill whatever the user resizes to
+   instead of sitting at the fixed popup width */
+body.detached {
+  width: auto;
+  min-width: 420px;
+}

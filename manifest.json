@@ -1,9 +1,13 @@
 {
   "manifest_version": 3,
   "name": "TC Part Sourcing",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Scrape eBay and Amazon listings and build formatted option blocks for ResNet part sourcing tickets.",
   "permissions": ["activeTab", "tabs", "storage", "clipboardWrite"],
+  "host_permissions": [
+    "*://*.ebay.com/*",
+    "*://*.amazon.com/*"
+  ],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
