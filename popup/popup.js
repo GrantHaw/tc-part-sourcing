@@ -1,5 +1,10 @@
 // tc part sourcing popup logic
 
+// firefox gives us browser.* (promise based), chrome gives us chrome.*
+// firefox also aliases chrome.* but its callback flavored there, so pin to browser when its there
+// everything below uses promises, which both browsers return when you leave the callback off
+const ext = (typeof browser !== 'undefined' && browser.runtime) ? browser : chrome;
+
 const KEY = 'tcps_options';
 
 const els = {
@@ -30,7 +35,7 @@ const els = {
   helpClose: document.getElementById('help-close'),
 };
 
-// chrome blocks alert() and confirm() in extension popups so we use these instead
+// chrome and firefox both block alert() and confirm() in extension popups so we use these instead
 // tcAlert: just an ok button, no cancel
 // tcConfirm: ok + cancel, resolves true/false
 function tcAlert(msg) {
@@ -120,11 +125,25 @@ let editIdx = -1; // -1 when adding a new one
     // hide the popout button since we already are popped out
     els.popout.style.display = 'none';
     document.title = 'TC Part Sourcing';
+    // let the layout fill the window instead of the fixed popup width
+    document.body.classList.add('detached');
     // track tab changes so URL/scrape stays in sync with whichever listing is focused
-    chrome.tabs.onActivated.addListener(onTabChange);
-    chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
+    ext.tabs.onActivated.addListener(onTabChange);
+    ext.tabs.onUpdated.addListener(function (tabId, info, tab) {
       // only react to completed navigations in the active tab
       if (info.status === 'complete' && tab.active) onTabChange();
+    });
+    // remember which normal window the user is actually browsing in
+    ext.windows.onFocusChanged.addListener(async function (id) {
+      if (id === ext.windows.WINDOW_ID_NONE) return;
+      try {
+        const w = await ext.windows.get(id);
+        if (w.type !== 'normal') return; // thats us, ignore
+        lastWin = id;
+        onTabChange();
+      } catch (e) {
+        // window went away between the event and the lookup, nothing to do
+      }
     });
   }
 
@@ -133,8 +152,8 @@ let editIdx = -1; // -1 when adding a new one
 
 // pop out into a detached window
 els.popout.addEventListener('click', function () {
-  const url = chrome.runtime.getURL('popup/popup.html?detached=1');
-  chrome.windows.create({
+  const url = ext.runtime.getURL('popup/popup.html?detached=1');
+  ext.windows.create({
     url: url,
     type: 'popup',
     width: 500,
@@ -177,20 +196,16 @@ async function onTabChange() {
 }
 
 // storage
-function loadOpts() {
-  return new Promise(function (res) {
-    chrome.storage.local.get([KEY], function (d) {
-      res(d[KEY] || []);
-    });
-  });
+// no callbacks here on purpose, firefox's browser.* ignores them and only returns promises
+async function loadOpts() {
+  const d = await ext.storage.local.get([KEY]);
+  return (d && d[KEY]) || [];
 }
 
-function saveOpts() {
-  return new Promise(function (res) {
-    const obj = {};
-    obj[KEY] = opts;
-    chrome.storage.local.set(obj, res);
-  });
+async function saveOpts() {
+  const obj = {};
+  obj[KEY] = opts;
+  await ext.storage.local.set(obj);
 }
 
 // scraping
@@ -210,7 +225,7 @@ async function scrapeTab() {
   }
 
   try {
-    const res = await chrome.tabs.sendMessage(tab.id, { action: 'scrape' });
+    const res = await ext.tabs.sendMessage(tab.id, { action: 'scrape' });
     if (res && res.ok) {
       fillForm(res.data);
       setStatus('Scraped from ' + site + '. Verify fields before adding.', 'ok');
@@ -224,23 +239,43 @@ async function scrapeTab() {
   }
 }
 
-function getTab() {
-  if (isDetached) {
-    // find the active tab in the user's actual browser window, not this extension window
-    return new Promise(function (res) {
-      chrome.windows.getLastFocused({ windowTypes: ['normal'] }, function (win) {
-        if (!win) { res(null); return; }
-        chrome.tabs.query({ active: true, windowId: win.id }, function (tabs) {
-          res(tabs[0]);
-        });
-      });
-    });
+// id of the last normal browser window we saw focused, detached mode reads tabs from it
+let lastWin = null;
+
+async function getTab() {
+  if (!isDetached) {
+    const tabs = await ext.tabs.query({ active: true, currentWindow: true });
+    return tabs[0] || null;
   }
-  return new Promise(function (res) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      res(tabs[0]);
-    });
-  });
+
+  // detached, so we want the active tab in the user's actual browser window,
+  // not this extension window. firefox deprecated windowTypes on getLastFocused
+  // and ignores it on getAll, so filter on w.type ourselves.
+  let id = lastWin;
+  if (id === null) {
+    const wins = await ext.windows.getAll({ populate: false });
+    const norm = wins.filter(function (w) { return w.type === 'normal'; });
+    if (norm.length === 0) return null;
+    const foc = norm.filter(function (w) { return w.focused; });
+    id = (foc.length ? foc[0] : norm[norm.length - 1]).id;
+  }
+
+  let tabs = [];
+  try {
+    tabs = await ext.tabs.query({ active: true, windowId: id });
+  } catch (e) {
+    // window id went stale (user closed it)
+    tabs = [];
+  }
+
+  if (tabs.length === 0 && lastWin !== null) {
+    // forget the stale id and try once more from scratch
+    lastWin = null;
+    return getTab();
+  }
+
+  if (tabs.length) lastWin = id;
+  return tabs[0] || null;
 }
 
 function detectSite(url) {
@@ -431,14 +466,43 @@ els.copy.addEventListener('click', async function () {
     return;
   }
   const text = opts.map(function (o, i) { return formatOpt(o, i + 1); }).join('\n\n');
-  try {
-    await navigator.clipboard.writeText(text);
+  const ok = await copyText(text);
+  if (ok) {
     els.copy.textContent = 'Copied!';
     setTimeout(function () { els.copy.textContent = 'Copy all'; }, 1500);
-  } catch (e) {
-    await tcAlert('Copy failed: ' + e.message);
+  } else {
+    await tcAlert('Copy failed. Select the text manually or check clipboard permissions.');
   }
 });
+
+// firefox rejects navigator.clipboard in some extension contexts, so keep the
+// old execCommand path around as a fallback. chrome takes the first branch.
+async function copyText(t) {
+  try {
+    await navigator.clipboard.writeText(t);
+    return true;
+  } catch (e) {
+    // console.log('clipboard api failed, falling back', e);
+  }
+
+  const ta = document.createElement('textarea');
+  ta.value = t;
+  ta.style.position = 'fixed';
+  ta.style.top = '-1000px';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch (e2) {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  return ok;
+}
 
 function formatOpt(o, n) {
   const lines = [];

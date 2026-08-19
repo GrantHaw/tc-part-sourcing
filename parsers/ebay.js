@@ -2,7 +2,7 @@
 // selectors will break eventually, just update them when they do
 // popup lets user edit fields so a broken parser degrades gracefully
 
-chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+ext.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if (msg && msg.action === 'scrape') {
     try {
       sendResponse({ ok: true, data: scrape() });
@@ -10,8 +10,10 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
       // console.log('ebay scrape err', e);
       sendResponse({ ok: false, err: String(e) });
     }
+    // firefox hangs the sender promise if we claim async and never answer,
+    // so only hold the channel open for messages we actually handle
+    return true;
   }
-  return true;
 });
 
 function scrape() {
