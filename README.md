@@ -7,10 +7,10 @@ Firefox, Chrome, and Edge.
 ## Install
 
 * Firefox
-   * [Download for Firefox](REPLACE_WITH_XPI_UPLOAD_URL)
+   * [Download for Firefox](https://addons.mozilla.org/firefox/downloads/file/4968585/5b931a1a17c4464e8a20-0.4.0.xpi)
    * Download and open the `.xpi` file with Firefox
 * Chrome
-   * [Download for Chrome (Unpacked)](REPLACE_WITH_ZIP_UPLOAD_URL)
+   * [Download for Chrome (Unpacked)](https://gitlab.code.rit.edu/tc_systemadmins/tc-partsourcing-extension/uploads/67a6534544099f2434ae2614aa88553a/tc-part-sourcing-chrome.zip)
    * Download the `.zip` file and extract it. Visit chrome://extensions and ensure you are in developer mode. Click "Load unpacked" and select the extracted folder.
 
 You'll likely want to allow the extension to run in a private tab.
@@ -128,6 +128,8 @@ Both drop `dist/tc-part-sourcing-chrome.zip` and `dist/tc-part-sourcing-firefox.
 **The xpi has to be signed before anyone can install it by opening the file.** Release Firefox refuses unsigned add-ons, so an unsigned xpi behind the download link above is a dead link with extra steps. Submit it to addons.mozilla.org as unlisted (self distribution), download the signed copy, and upload that as the release artifact.
 
 For testing without signing, `about:debugging#/runtime/this-firefox` then "Load Temporary Add-on". It lasts until you restart Firefox.
+
+The Firefox download link at the top of this file points at the AMO hosted signed file, so it always serves the signed copy. When you ship a new version, sign it the same way and update that link to the new file URL. The Chrome link is a GitLab upload and needs replacing with a fresh upload each release.
 
 Validate before submitting:
 
