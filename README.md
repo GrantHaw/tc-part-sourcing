@@ -4,21 +4,6 @@ Browser extension that scrapes eBay and Amazon listings and builds formatted opt
 
 Firefox, Chrome, and Edge.
 
-## Install
-
-* Firefox
-   * [Download for Firefox](https://addons.mozilla.org/firefox/downloads/file/4968585/5b931a1a17c4464e8a20-0.4.0.xpi)
-   * Download and open the `.xpi` file with Firefox
-* Chrome
-   * [Download for Chrome (Unpacked)](https://gitlab.code.rit.edu/-/project/2489/uploads/77995a938fd5c3767d52fe794e122b62/tc-part-sourcing-chrome.zip)
-   * Download the `.zip` file and extract it. Visit chrome://extensions and ensure you are in developer mode. Click "Load unpacked" and select the extracted folder.
-
-You'll likely want to allow the extension to run in a private tab.
-
-In Firefox that's under `about:addons`, click TC Part Sourcing, then set "Run in Private Windows" to Allow. In Chrome it's the "Allow in Incognito" toggle on the extension's details page.
-
-Pin the icon to your toolbar either way. You'll be clicking it constantly.
-
 ## Using it
 
 1. Open an eBay or Amazon listing for a candidate part.
